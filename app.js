@@ -94,4 +94,28 @@ function createFilterElement(filterData){
     
     return filterHolder;
 }
+// Function to add a filter
+function addFilter(newFilter){
+    if (!filter.includes(newFilter)){
+        const filterSection = document.getElementById("filter-tags");
+        filterSection.parentElement.classList.remove("opacity-0");
+        filterSection.appendChild(createFilterElement(newFilter));
+        filter.push(newFilter);
+        renderJobs(); // Render filtered jobs
+    }
+}
 
+// Function to remove a filter
+function removeFilter(newFilter){
+    const filterSection = document.getElementById("filter-tags");
+    const filterElemnt = filterSection.querySelector('[data-lang="'+newFilter+'"]');
+    filterSection.removeChild(filterElemnt.parentElement);
+    const index = filter.indexOf(newFilter);
+    if (index !== -1) {
+        filter.splice(index, 1);
+        if(filter.length === 0){
+            filterSection.parentElement.classList.add("opacity-0");
+        }
+        renderJobs(); // Render filtered jobs
+    }
+}
