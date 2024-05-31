@@ -3,10 +3,24 @@ const jobs = document.getElementById("jobs");
 const filters = document.querySelectorAll(".tags btn");
 const clearFiltersBtn = document.getElementById("clear-filter");
 let jobData = []; // Store all job data
-var filter = []; // Store filters 
+let filter = []; // Store filters 
 
-// events
-clearFiltersBtn.addEventListener("click",removeAllFilter);
+// Load filters from local storage
+function loadFiltersFromLocalStorage() {
+    const storedFilters = localStorage.getItem('filters');
+    if (storedFilters) {
+        filter = JSON.parse(storedFilters);
+        filter.forEach(addFilterWithoutRender);
+    }
+}
+
+// Save filters to local storage
+function saveFiltersToLocalStorage() {
+    localStorage.setItem('filters', JSON.stringify(filter));
+}
+
+// Events
+clearFiltersBtn.addEventListener("click", removeAllFilter);
 
 // Function to load jobs initially
 function loadJobs() {
@@ -28,7 +42,6 @@ function renderJobs() {
     });
 }
 
-// Function to create a job card element
 // Function to create a job card element
 function createCardElement(cardData){
     const card = document.createElement("div");
@@ -104,6 +117,17 @@ function createFilterElement(filterData){
     
     return filterHolder;
 }
+
+// Function to add a filter without rendering jobs (used for initial load)
+function addFilterWithoutRender(newFilter) {
+    if (!filter.includes(newFilter)){
+        const filterSection = document.getElementById("filter-tags");
+        filterSection.parentElement.classList.remove("opacity-0");
+        filterSection.appendChild(createFilterElement(newFilter));
+        filter.push(newFilter);
+    }
+}
+
 // Function to add a filter
 function addFilter(newFilter){
     if (!filter.includes(newFilter)){
@@ -111,6 +135,7 @@ function addFilter(newFilter){
         filterSection.parentElement.classList.remove("opacity-0");
         filterSection.appendChild(createFilterElement(newFilter));
         filter.push(newFilter);
+        saveFiltersToLocalStorage();
         renderJobs(); // Render filtered jobs
     }
 }
@@ -118,26 +143,29 @@ function addFilter(newFilter){
 // Function to remove a filter
 function removeFilter(newFilter){
     const filterSection = document.getElementById("filter-tags");
-    const filterElemnt = filterSection.querySelector('[data-lang="'+newFilter+'"]');
-    filterSection.removeChild(filterElemnt.parentElement);
+    const filterElement = filterSection.querySelector('[data-lang="'+newFilter+'"]');
+    filterSection.removeChild(filterElement.parentElement);
     const index = filter.indexOf(newFilter);
     if (index !== -1) {
         filter.splice(index, 1);
         if(filter.length === 0){
             filterSection.parentElement.classList.add("opacity-0");
         }
+        saveFiltersToLocalStorage();
         renderJobs(); // Render filtered jobs
     }
 }
 
-// Function to remove all filter
+// Function to remove all filters
 function removeAllFilter(){
     const filterSection = document.getElementById("filter-tags");
     filterSection.innerHTML="";
-    filter = []
+    filter = [];
     filterSection.parentElement.classList.add("opacity-0");
+    saveFiltersToLocalStorage();
     renderJobs(); // Render filtered jobs
 }
 
-// Initialize by loading jobs
+// Initialize by loading jobs and filters
 loadJobs();
+loadFiltersFromLocalStorage();
