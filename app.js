@@ -1,6 +1,5 @@
 // Global variables
 const jobs = document.getElementById("jobs");
-const filters = document.querySelectorAll(".tags btn");
 const clearFiltersBtn = document.getElementById("clear-filter");
 let jobData = []; // Store all job data
 let filter = []; // Store filters 
@@ -11,6 +10,9 @@ function loadFiltersFromLocalStorage() {
     if (storedFilters) {
         filter = JSON.parse(storedFilters);
         filter.forEach(addFilterWithoutRender);
+        if (filter.length > 0) {
+            document.getElementById("filter-container").classList.remove("opacity-0");
+        }
     }
 }
 
@@ -36,14 +38,15 @@ function loadJobs() {
 function renderJobs() {
     jobs.innerHTML = "";
     jobData.forEach(job => {
-        if (filter.length === 0 || filter.every(f => job.languages.includes(f))) {
+        const allTags = [job.role, job.level, ...job.languages, ...job.tools];
+        if (filter.length === 0 || filter.every(f => allTags.includes(f))) {
             jobs.appendChild(createCardElement(job));
         }
     });
 }
 
 // Function to create a job card element
-function createCardElement(cardData){
+function createCardElement(cardData) {
     const card = document.createElement("div");
     card.classList.add("job", "flex-wrap");
 
@@ -59,9 +62,9 @@ function createCardElement(cardData){
           <a class="job__pos" href="#">${cardData.position}</a>
           <hr class="hr d-block-sm">
           <div class="d-flex">
-            <p class="job_det">1d ago</p>
-            <p class="job_det">Full Time</p>
-            <p class="job_det">USA only</p>
+            <p class="job_det">${cardData.postedAt}</p>
+            <p class="job_det">${cardData.contract}</p>
+            <p class="job_det">${cardData.location}</p>
           </div>
         </div>
       </div>
@@ -72,34 +75,59 @@ function createCardElement(cardData){
     card.innerHTML = cardContent;
     const tags = card.querySelector(".tags");
     const company = card.querySelector(".job__company");
-    if(cardData.new === true){
+    if (cardData.new === true) {
         company.insertAdjacentHTML("beforeend",
             `<p class="job__status job__status--featured">New!</p>`
         );
     }
-    if(cardData.featured === true){
+    if (cardData.featured === true) {
         company.insertAdjacentHTML("beforeend",
             `<p class="job__status job__status--new">Featured</p>`
         );
         card.classList.add("job--featured");
     }
-    // Add event listeners to filter buttons
-    for (const key in cardData.languages) {
-        tags.insertAdjacentHTML("beforeend",
-            `<button class="btn job-lang">${cardData.languages[key]}</button>`
-        );
-    } 
+    
+    // Add role and level
+    tags.insertAdjacentHTML("beforeend",
+        `<button class="btn job-role">${cardData.role}</button>`
+    );
+    tags.insertAdjacentHTML("beforeend",
+        `<button class="btn job-level">${cardData.level}</button>`
+    );
+
+    // Add event listeners to filter buttons for role and level
     tags.querySelectorAll(".btn").forEach(element => {
         element.addEventListener("click", event => {
             addFilter(element.textContent);
         });
     });
-    
+
+    // Add event listeners to filter buttons for languages
+    for (const lang of cardData.languages) {
+        tags.insertAdjacentHTML("beforeend",
+            `<button class="btn job-lang">${lang}</button>`
+        );
+    }
+
+    // Add event listeners to filter buttons for tools
+    for (const tool of cardData.tools) {
+        tags.insertAdjacentHTML("beforeend",
+            `<button class="btn job-tool">${tool}</button>`
+        );
+    }
+
+    // Add event listeners to filter buttons
+    tags.querySelectorAll(".btn").forEach(element => {
+        element.addEventListener("click", event => {
+            addFilter(element.textContent);
+        });
+    });
+
     return card;
 }
 
 // Function to create a filter element
-function createFilterElement(filterData){
+function createFilterElement(filterData) {
     const filterHolder = document.createElement("li");
     filterHolder.classList.add("filter-op");
 
@@ -110,7 +138,7 @@ function createFilterElement(filterData){
                     </button>
                     `;
     filterHolder.innerHTML = filterContent;
-    const remove  = filterHolder.querySelector(".filter__remove");
+    const remove = filterHolder.querySelector(".filter__remove");
     remove.addEventListener("click", event => {
         removeFilter(event.currentTarget.getAttribute("data-lang"));
     });
@@ -120,7 +148,7 @@ function createFilterElement(filterData){
 
 // Function to add a filter without rendering jobs (used for initial load)
 function addFilterWithoutRender(newFilter) {
-    if (!filter.includes(newFilter)){
+    if (!filter.includes(newFilter)) {
         const filterSection = document.getElementById("filter-tags");
         filterSection.parentElement.classList.remove("opacity-0");
         filterSection.appendChild(createFilterElement(newFilter));
@@ -129,8 +157,8 @@ function addFilterWithoutRender(newFilter) {
 }
 
 // Function to add a filter
-function addFilter(newFilter){
-    if (!filter.includes(newFilter)){
+function addFilter(newFilter) {
+    if (!filter.includes(newFilter)) {
         const filterSection = document.getElementById("filter-tags");
         filterSection.parentElement.classList.remove("opacity-0");
         filterSection.appendChild(createFilterElement(newFilter));
@@ -141,14 +169,14 @@ function addFilter(newFilter){
 }
 
 // Function to remove a filter
-function removeFilter(newFilter){
+function removeFilter(newFilter) {
     const filterSection = document.getElementById("filter-tags");
     const filterElement = filterSection.querySelector('[data-lang="'+newFilter+'"]');
     filterSection.removeChild(filterElement.parentElement);
     const index = filter.indexOf(newFilter);
     if (index !== -1) {
         filter.splice(index, 1);
-        if(filter.length === 0){
+        if (filter.length === 0) {
             filterSection.parentElement.classList.add("opacity-0");
         }
         saveFiltersToLocalStorage();
@@ -157,9 +185,9 @@ function removeFilter(newFilter){
 }
 
 // Function to remove all filters
-function removeAllFilter(){
+function removeAllFilter() {
     const filterSection = document.getElementById("filter-tags");
-    filterSection.innerHTML="";
+    filterSection.innerHTML = "";
     filter = [];
     filterSection.parentElement.classList.add("opacity-0");
     saveFiltersToLocalStorage();
