@@ -18,6 +18,16 @@ function loadJobs() {
     });
 }
 
+// Function to render filtered jobs
+function renderJobs() {
+    jobs.innerHTML = "";
+    jobData.forEach(job => {
+        if (filter.length === 0 || filter.every(f => job.languages.includes(f))) {
+            jobs.appendChild(createCardElement(job));
+        }
+    });
+}
+
 // Function to create a job card element
 // Function to create a job card element
 function createCardElement(cardData){
