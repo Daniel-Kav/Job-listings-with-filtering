@@ -74,3 +74,24 @@ function createCardElement(cardData){
     
     return card;
 }
+
+// Function to create a filter element
+function createFilterElement(filterData){
+    const filterHolder = document.createElement("li");
+    filterHolder.classList.add("filter-op");
+
+    const filterContent = `
+                    <span class="filter__tag">${filterData}</span>
+                    <button class="filter__remove" data-lang=${filterData}>
+                        <img src="./images/icon-remove.svg" alt="" srcset="">
+                    </button>
+                    `;
+    filterHolder.innerHTML = filterContent;
+    const remove  = filterHolder.querySelector(".filter__remove");
+    remove.addEventListener("click", event => {
+        removeFilter(event.currentTarget.getAttribute("data-lang"));
+    });
+    
+    return filterHolder;
+}
+
