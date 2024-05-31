@@ -129,3 +129,15 @@ function removeFilter(newFilter){
         renderJobs(); // Render filtered jobs
     }
 }
+
+// Function to remove all filter
+function removeAllFilter(){
+    const filterSection = document.getElementById("filter-tags");
+    filterSection.innerHTML="";
+    filter = []
+    filterSection.parentElement.classList.add("opacity-0");
+    renderJobs(); // Render filtered jobs
+}
+
+// Initialize by loading jobs
+loadJobs();
